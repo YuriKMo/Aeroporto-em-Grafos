@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <graph.h>
+#include "graph.h"
 
 Graph *create_graph(unsigned int initial_cap) {
     Graph *g = (Graph *) malloc(sizeof(Graph));
@@ -158,7 +158,9 @@ int rem_flight(Graph *g, char *flight_number) {
 
                 // O nó agora está totalmente isolado das listas da matriz.
                 // A memória pode ser liberada com segurança sem causar vazamentos ou ponteiros órfãos.
+                free(current->info);
                 free(current);
+
                 return 1;
             }
 
@@ -253,4 +255,42 @@ void list_routes(Graph *g, char *orig_code, char *dest_code) {
 
     free(visited);
     free(path);
+}
+
+void free_graph(Graph *g) {
+    if (g == NULL)
+        return;
+
+
+    for (int i = 0; i < g->qtd_airports; i++) { // Percorre todas as linhas da matriz esparsa.
+
+        // Começa no primeiro nó da linha atual.
+        Node *current = g->rows[i];
+
+        // Percorre horizontalmente todos os nós da linha.
+        while (current != NULL) {
+
+            // Guarda temporariamente o nó atual
+            Node *temp = current;
+
+            // Avança para o próximo nó antes de liberar
+            current = current->right;
+
+            // Libera a memória associada às informações
+            free(temp->info);
+
+            // Libera o próprio nó da matriz esparsa.
+            free(temp);
+        }
+    }
+
+    // Libera o vetor dinâmico contendo os aeroportos.
+    free(g->airports_array);
+
+    // Libera os vetores de ponteiros utilizados para controlar linhas e colunas.
+    free(g->rows);
+    free(g->columns);
+
+    // Libera o grafo.
+    free(g);
 }
