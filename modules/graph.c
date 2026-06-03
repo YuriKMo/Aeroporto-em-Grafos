@@ -223,10 +223,26 @@ void search_path(Graph *g, int row, int column, int *visited, int *path, int ste
     } else {
         Node *current = g->rows[row];
 
-        while (current != NULL) {
-            // TODO
+        while(current != NULL){
+
+            int next = current->column;
+
+            if(!visited[next]){
+
+                search_path(
+                    g,
+                    next,
+                    column,
+                    visited,
+                    path,
+                    steps + 1
+                );
+            }
+
+            current = current->right;
         }
     }
+    visited[row] = 0;
 }
 
 void list_routes(Graph *g, char *orig_code, char *dest_code) {
