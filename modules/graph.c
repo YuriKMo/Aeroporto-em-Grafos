@@ -76,6 +76,17 @@ int reg_flight(Graph *g, char *orig_code, char *dest_code, void *info) {
     int row = search_idx(g, orig_code);
     int column = search_idx(g, dest_code);
 
+    if (row == -1 && column == -1) {
+        printf("[ERRO] Ambos os aeroportos de origem ('%s') e destino ('%s') nao foram encontrados no sistema.\n", orig_code, dest_code);
+        return 0;
+    } else if (row == -1) {
+        printf("[ERRO] Aeroporto de origem ('%s') nao encontrado no sistema.\n", orig_code);
+        return 0;
+    } else if (column == -1) {
+        printf("[ERRO] Aeroporto de destino ('%s') nao encontrado no sistema.\n", dest_code);
+        return 0;
+    }
+
     if (row == -1 || column == -1) return 0;
 
     Node *flight = (Node *) malloc(sizeof(Node));
@@ -160,3 +171,86 @@ int rem_flight(Graph *g, char *flight_number) {
     return 0;
 }
 
+void list_flights(Graph *g, char *orig_code) {
+    int row = search_idx(g, orig_code);
+
+    if (row == -1) {
+        printf("[ERRO] Aeroporto de origem '%s' nao encontrado no sistema.\n", orig_code);
+        return; 
+    }
+
+    Node *current = g->rows[row];
+
+    if (current == NULL) {
+        printf("Nenhum voo cadastrado partindo de %s.\n", orig_code);
+        return;
+    }
+
+    printf("=== Voos Diretos partindo de %s ===\n", orig_code);
+
+    while (current != NULL) {
+        char *flight_num = (char *)current->info;
+
+        int col_idx = current->column;
+        char *dest_code = g->airports_array[col_idx].code;
+
+        printf(" -> Voo: %s | Destino: %s\n", flight_num, dest_code);
+
+
+        current = current->right;
+    }
+    printf("======================================\n");   
+}
+
+void search_path(Graph *g, int row, int column, int *visited, int *path, int steps) {
+    path[steps] = row;
+    visited[row] = 1;
+
+    if (row == column) {
+        printf(" Rota: ");
+
+        for (int i = 0; i <= steps; i++) {
+            printf("%s", g->airports_array[path[i]].code);
+
+            if (i < steps) {
+                printf(" -> ");
+            }
+        }
+
+        printf("\n");
+    } else {
+        Node *current = g->rows[row];
+
+        while (current != NULL) {
+            // TODO
+        }
+    }
+}
+
+void list_routes(Graph *g, char *orig_code, char *dest_code) {
+    int row = search_idx(g, orig_code);
+    int column = search_idx(g, dest_code);
+
+    if (row == -1 && column == -1) {
+        printf("[ERRO] Ambos os aeroportos de origem ('%s') e destino ('%s') nao foram encontrados no sistema.\n", orig_code, dest_code);
+        return;
+    } else if (row == -1) {
+        printf("[ERRO] Aeroporto de origem ('%s') nao encontrado no sistema.\n", orig_code);
+        return;
+    } else if (column == -1) {
+        printf("[ERRO] Aeroporto de destino ('%s') nao encontrado no sistema.\n", dest_code);
+        return;
+    }
+
+    int *visited = (int *) calloc(g->qtd_airports, sizeof(int));
+    int *path = (int *) malloc(g->qtd_airports * sizeof(int));
+
+    printf("=== Rotas encontradas de %s para %s ===\n", orig_code, dest_code);
+
+    search_path(g, row, column, visited, path, 0);
+
+    printf("=========================================\n");
+
+    free(visited);
+    free(path);
+}
